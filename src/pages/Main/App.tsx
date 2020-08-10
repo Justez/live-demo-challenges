@@ -39,14 +39,11 @@ const App = () => {
         var nameA = name1.toUpperCase();
         var nameB = name2.toUpperCase();
         if (nameA < nameB) {
-          console.log(nameA, nameB, nameA > nameB);
-          
           return -1;
         }
         if (nameA > nameB) {
           return 1;
         }
-      
         return 0;
       })
       )
