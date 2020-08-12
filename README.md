@@ -1,1 +1,1 @@
-Telia 1.5hrs live technical task.
+A 1.5hrs live technical task.
