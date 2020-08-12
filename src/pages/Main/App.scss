@@ -17,3 +17,27 @@
 .App-header button{
   margin-right: 10px;
 }
+.Grid {
+  margin: 6vmax;
+  height: 400px;
+  width: 400px;
+  display: flex;
+  flex-direction: row;
+}
+
+.Column {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.Cell {
+  flex: 1;
+  border: 1px solid black;
+  text-align: center;
+  font-size: 2em;
+}
+
+button.active {
+  background-color: green;
+}

@@ -1,63 +1,101 @@
 import React, { useState, useEffect } from 'react';
 import './App.scss';
-import PhoneListTemplate from '../../business-components/phone-list-template/phone-list-template'
-import SearchField from '../../business-components/brand-search-field/field'
-import { Phone } from '../../types';
 
 const App = () => {
-  const [phones, setPhones] = useState([])
-  const [query, setQuery] = useState('')
-  
+  const [user, setUser] = useState('x');
+  const [selected, setSelected] = useState({ x: [], o: [] });
+  const [winner, setWinner] = useState('')
+
   useEffect(() => {
-    fetch('https://raw.githubusercontent.com/michr0/interview-api/master/brands.json')
-    .then(data => data.json())
-    .then(res => setPhones(res.options.reverse()));
-  }, [])
-  
-  useEffect(() => {
-    if (query) {
-      setPhones(phones.filter((phone: Phone) => phone.displayName.includes(query)))
-    } else {
-      !query && fetch('https://raw.githubusercontent.com/michr0/interview-api/master/brands.json')
-      .then(data => data.json())
-      .then(res => setPhones(res.options.reverse()));
+    for (let row = 0; row < 3; row++) {
+      const filter = ([x, y]: any) => row === y
+      if (selected.x.filter(filter).length === 3) {
+        setWinner('x');
+        break;
+      }
+      if (selected.o.filter(filter).length === 3) {
+        setWinner('o');
+        break;
+      }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query])
+    
+    for (let column = 0; column < 3; column++) {
+      const filter = ([x, y]: any) => column === x
+      if (selected.x.filter(filter).length === 3) {
+        setWinner('x');
+        break;
+      }
+      if (selected.o.filter(filter).length === 3) {
+        setWinner('o');
+        break;
+      }
+    }
 
-  const handleSearch = ({ target: { value }}: any) => {
-    setQuery(value)
+    let firstDiagX = 0;
+    let secDiagX = 0;
+    let firstDiagO = 0;
+    let secDiagO = 0;
+    for (let i = 0; i<3; i++) {
+      selected.x.forEach(([x, y]: any) => {
+        if (x === i && y === i) firstDiagX++;
+        if (x === 2-i && y === i) secDiagX++;
+      });
+      selected.o.forEach(([x, y]: any) => {
+        if (x === i && y === i) firstDiagO++;
+        if (x === 2-i && y === i) secDiagO++;
+      });
+      if (firstDiagX === 3 || secDiagX === 3) setWinner('x')
+      if (firstDiagO === 3 || secDiagO === 3) setWinner('o')
+    }
+  }, [winner, selected])
+
+  const handlePlaceItem = (x: number, y: number) => {
+    if (user === 'x') {
+      //@ts-ignore
+      setSelected({ ...selected, x: [...selected.x, [x, y]] })
+    } else {
+      //@ts-ignore
+      setSelected({ ...selected, o: [...selected.o, [x, y]] })
+    }
+    setUser(user === 'x' ? 'o' : 'x')
   }
 
-  const handleDelete = (id: Phone['id']) => {
-    setPhones(phones.filter((phone: Phone) => phone.id !== id))
-  }
-
-  const handleSort = () => {
-    setPhones(
-      phones.sort(({ displayName: name1 }: Phone, { displayName: name2 }:Phone) => {
-        var nameA = name1.toUpperCase();
-        var nameB = name2.toUpperCase();
-        if (nameA < nameB) {
-          return -1;
-        }
-        if (nameA > nameB) {
-          return 1;
-        }
-        return 0;
-      })
+  const cells = (xind: number) => {
+    return (new Array(3).fill(2).map((j, ind) => {
+      const tag = (
+        selected.x.find(([x1, y1]) => x1 === xind && y1 === ind) && 'x'
       )
+        ||
+        (
+          selected.o.find(([x1, y1]) => x1 === xind && y1 === ind) && 'o'
+        )
 
+      return (
+        <button key={`${xind}${ind}`} disabled={!!tag} className="Cell" onClick={handlePlaceItem.bind(undefined, xind, ind)}>
+          {tag}
+        </button>
+      )
+    }
+    ))
   }
-  
+
   return (
-    <div className="App">
+    <>
       <header className="App-header">
-        <button onClick={handleSort}>sort</button>
-        <SearchField query={query} onSearch={handleSearch} />
+        <button className={user === 'x' ? 'active' : ''}>First user</button>
+        <button className={user === 'o' ? 'active' : ''}>Second user</button>
       </header>
-      <PhoneListTemplate phones={phones} onDelete={handleDelete} />
-    </div>
+
+      <div className="Grid">
+        {!winner && (new Array(3).fill(2).map((i, xind) =>
+          <div key={`${xind}`} className="Column">
+            {/* disable already clicked */}
+            {cells(xind)}
+          </div>
+        ))}
+        {winner && `${winner} won!`}
+      </div>
+    </>
   );
 }
 
